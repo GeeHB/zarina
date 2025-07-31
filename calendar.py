@@ -27,7 +27,8 @@ class calendar(object):
     #
     #  Retourne {done ?, [evts]}
     def _addEvent(self, evt : event.event):
-        if evt.
+        if evt.type != event.event.EVENT_NONE :
+            return True
         return False, None
 
     # Suppression de la liste des evènements
@@ -49,15 +50,19 @@ class calendar(object):
                     count+=1
         return count
 
-    # Sauvegarde d'un seul élément
-    def __saveSingleEvent(self, evt : event.event):
-        return event.event.ID_NEW
-
     # Chargement de certains évènements du calendrier
     def __load(self):
         if len(self.events_) > 0:
             pass
         pass
+
+    # Sauvegarde d'un seul élément
+    def __saveSingleEvent(self, evt : event.event):
+        return event.event.ID_NEW
+
+    # Mise à jour d'un seul élément
+    def __updateSingleEvent(self, evt : event.event):
+        return event.event.ID_NEW
 
 
 # EOF
