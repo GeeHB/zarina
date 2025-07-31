@@ -2,19 +2,34 @@
 #
 # coding=UTF-8
 #
-#   Fichier     :   calendar.py
+#   Fichier     :   activity.py
 #
 #   Auteur      :   Jérôme Heny-Barnaudière - DSI
 #
 #   Description :   "Calendrier" d'un agent"
 #
 
+import options
 import event
 
 #
-# calendar - Calendrier professionel d'un agent
+# Exception lors des traitements
 #
-class calendar(object):
+class calendarException(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+
+    def __repr__(self):
+        return f"{options.APP_TITLE} : {self.message}"
+
+#
+# activity - Calendrier professionel d'un agent
+#
+class activity(object):
 
     ID_NO_USER = 0
 
@@ -27,7 +42,7 @@ class calendar(object):
     #
     #  Retourne {done ?, [evts]}
     def _addEvent(self, evt : event.event):
-        if evt.type != event.event.EVENT_NONE :
+        if evt.type != event.event.EVENT_TYPE_NONE :
             return True
         return False, None
 
