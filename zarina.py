@@ -9,14 +9,16 @@
 #   Description :   Gestion des sorties aléataoires et des repos associés
 #
 
-from activity import activity, calendarException
+from activity import calendar, calendarException
 import event
 
 
 # Point d'entrée
 if '__main__' == __name__:
     try:
-        newEvent = event.event()
+        calendrier = calendar()
+        calendrier._connect()
+
     except calendarException as excpt:
         print(excpt)
 

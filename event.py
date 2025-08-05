@@ -36,13 +36,11 @@ class event(object):
     OVERLAP_END_IN = 2
     OVERLAP_FULL = (OVERLAP_START_IN or OVERLAP_END_IN) # Même temporalité
 
-    ID_NEW = 0
-
     EVT_DURATION_MIN = 30      # Duréee min. d'un évènement
 
     # Construction
     def __init__(self, title = None, type = EVENT_TYPE_NONE, startDate = None, duration = 0):
-        self.idEVENT_TYPE_ = self.ID_NEW   # Nouvel évènement
+        self.idEVENT_TYPE_ = options.ID_NEW   # Nouvel évènement
         self.title_ = title if title is not None else DEF_EVENT_TITLE
         self.typeEVENT_TYPE_ = type
         self.modified_ = False
@@ -52,7 +50,7 @@ class event(object):
 
     # Un nouvel évènement ?
     def isNew(self) -> bool:
-        return True if self.id == self.ID_NEW else False
+        return True if self.id == options.ID_NEW else False
 
     # ID de l'évènement
     @property
@@ -60,7 +58,7 @@ class event(object):
         return self.idEVENT_TYPE_
     @id.setter
     def id(self, newVal):
-        if newVal != self.ID_NEW and newVal != self.idEVENT_TYPE_:
+        if newVal != options.ID_NEW and newVal != self.idEVENT_TYPE_:
             self.idEVENT_TYPE_ = newVal
 
     # Type d'évènement

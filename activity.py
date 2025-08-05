@@ -12,6 +12,9 @@
 import options
 import event
 
+import mariadb
+import dbconsts
+
 #
 # Exception lors des traitements
 #
@@ -27,21 +30,34 @@ class calendarException(Exception):
         return f"{options.APP_TITLE} : {self.message}"
 
 #
-# activity - Calendrier professionel d'un agent
+# calendar - Calendrier professionel d'un agent
 #
-class activity(object):
+class calendar(object):
 
     ID_NO_USER = 0
 
     # Construction
-    def __init__(self, agentID = 0):
+    def __init__(self, agentID = options.ID_NEW):
+
         self.idAgent_ = agentID
-        self.events_ = [] # Pas d'évènements pour cet agent
+
+        # DB
+        self.conn_ = None
+        self.cur_ = None
+
+        if options.ID_NEW != agentID:
+            self.load()
+        else:
+            self.events_ = [] # Pas d'évènements pour cet agent
+
+    # Destruction
+    def __del__(self):
+        self._disconnect()
 
     # Ajout d'un évènement à une journée
     #
     #  Retourne {done ?, [evts]}
-    def _addEvent(self, evt : event.event):
+    def addEvent(self, evt : event.event):
         if evt.type != event.event.EVENT_TYPE_NONE :
             return True
         return False, None
@@ -54,30 +70,55 @@ class activity(object):
     # I/O
     #
 
+    # Connection à la base de données
+    def _connect(self) -> bool:
+        if self.conn_ is None :
+            try:
+                self.conn_ = mariadb.connect(
+                        host=dbconsts.DB_HOST,
+                        port=dbconsts.DB_PORT,
+                        database=dbconsts.DB_NAME,
+                        user=dbconsts.DB_USER,
+                        password=dbconsts.DB_PWD)
+            except mariadb.Error as e:
+                print(f"Erreur de connexion à la base de données : \"{e}\"")
+                self.conn_ = None
+
+        return (self.conn_ is not None)
+
+    # Deconnection
+    def _disconnect(self):
+        if self.cur_ is not None:
+            self.cur_.close()
+            self.cur_ = None
+
+        if self.conn_ is not None:
+            self.conn_.close()
+            self.conn_ = None
+
     # Sauvegarde des évènements du calendrier en mémoire
-    def __save(self) -> int:
+    def save(self) -> int:
         count = 0
         for evt in self.events_ :
             if evt.isNew():
                 newID = self.__saveSingleEvent(evt)
-                if newID != event.event.ID_NEW:
+                if newID != options.ID_NEW:
                     evt.id = newID
                     count+=1
         return count
 
-    # Chargement de certains évènements du calendrier
-    def __load(self):
+    # Chargement de certains (ou de tous les) évènements du calendrier
+    def load(self, start = None):
         if len(self.events_) > 0:
-            pass
-        pass
+            self.clear()
 
     # Sauvegarde d'un seul élément
     def __saveSingleEvent(self, evt : event.event):
-        return event.event.ID_NEW
+        return options.ID_NEW
 
     # Mise à jour d'un seul élément
     def __updateSingleEvent(self, evt : event.event):
-        return event.event.ID_NEW
+        return options.ID_NEW
 
 
 # EOF
