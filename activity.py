@@ -79,7 +79,8 @@ class calendar(object):
                         port=dbconsts.DB_PORT,
                         database=dbconsts.DB_NAME,
                         user=dbconsts.DB_USER,
-                        password=dbconsts.DB_PWD)
+                        password=dbconsts.DB_PWD,
+                        connect_timeout = dbconsts.DB_CONNECT_TIMEOUT)
             except mariadb.Error as e:
                 print(f"Erreur de connexion à la base de données : \"{e}\"")
                 self.conn_ = None

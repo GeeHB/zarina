@@ -12,6 +12,7 @@
 #
 
 import options
+from dbconsts import TYPE_REST, TYPE_WORK, TYPE_MEAL_TIME, TYPE_NIGHT_WORK, TYPE_RECOVERY, STATUS_OK, STATUS_JUST_ADDED, STATUS_TO_DELETE
 from datetime import datetime, timedelta
 
 DEF_EVENT_TITLE = "Nouvel évènement"
@@ -24,10 +25,11 @@ class event(object):
     # Types d'évènement
     #
     EVENT_TYPE_NONE = 0
-    EVENT_TYPE_ACTIVITE = 1
-    EVENT_TYPE_REPOS = 2
-    EVENT_TYPE_PAUSE_MERIDIENNE = 3
-    EVENT_TYPE_SORTIE = 4
+    EVENT_TYPE_REPOS = TYPE_REST
+    EVENT_TYPE_ACTIVITE = TYPE_WORK
+    EVENT_TYPE_PAUSE_MERIDIENNE = TYPE_MEAL_TIME
+    EVENT_TYPE_SORTIE = TYPE_NIGHT_WORK
+    EVENT_TYPE_RECUPERATION = TYPE_RECOVERY
 
     # Types de chevauchements
     #
@@ -40,10 +42,10 @@ class event(object):
 
     # Construction
     def __init__(self, title = None, type = EVENT_TYPE_NONE, startDate = None, duration = 0):
-        self.idEVENT_TYPE_ = options.ID_NEW   # Nouvel évènement
+        self.idEvent_ = options.ID_NEW   # Nouvel évènement
         self.title_ = title if title is not None else DEF_EVENT_TITLE
-        self.typeEVENT_TYPE_ = type
-        self.modified_ = False
+        self.idType = type
+        self.status_ = STATUS_OK
         self.startDate_ = startDate if startDate is not None else datetime.today()
         evtDuration = timedelta(minutes = duration if duration > self.EVT_DURATION_MIN else self.EVT_DURATION_MIN)
         self.endDate_ = self.startDate_ + evtDuration
@@ -55,29 +57,29 @@ class event(object):
     # ID de l'évènement
     @property
     def id(self):
-        return self.idEVENT_TYPE_
+        return self.idEvent_
     @id.setter
     def id(self, newVal):
-        if newVal != options.ID_NEW and newVal != self.idEVENT_TYPE_:
-            self.idEVENT_TYPE_ = newVal
+        if newVal != options.ID_NEW and newVal != self.idEvent_:
+            self.idEvent_ = newVal
 
     # Type d'évènement
     @property
     def type(self):
-        return self.typeEVENT_TYPE_
+        return self.idType_
     @type.setter
     def type(self, newType):
-        if newType != self.EVENT_TYPE_NONE and newType != self.typeEVENT_TYPE_:
-            self.typeEVENT_TYPE_ = newType
+        if newType != self.EVENT_TYPE_NONE and newType != self.idType_:
+            self.idType_ = newType
 
-    # L'evt a t'il été modifié ?
+    # Statut de l'évènement
     @property
-    def modified(self):
-        return self.modified_
-    @modified.setter
-    def modified(self, changed):
-        if changed != self.modified_:
-            self.modified_ = changed
+    def status(self):
+        return self.status_
+    @type.setter
+    def type(self, newStatus):
+        if newStatus != self.status_:
+            self.status_ = newStatus
 
     # Durée en min. d'un évènement
     def duration(self) -> int:
@@ -111,6 +113,6 @@ class event(object):
     # Affichage de l'objet
     #
     def __repr__(self) -> str:
-        return f"Objet : {"vide" if self.title_ == "" else self.title_}\n Du : {self.startDate_}\n Au : {self.endDate_}\n Type : {self.typeEVENT_TYPE_}"
+        return f"Objet : {"vide" if self.title_ == "" else self.title_}\n Du : {self.startDate_}\n Au : {self.endDate_}\n Type : {self.idType_}"
 
 # EOF

@@ -17,7 +17,8 @@ import event
 if '__main__' == __name__:
     try:
         calendrier = calendar()
-        calendrier._connect()
+        if False == calendrier._connect():
+            exit(1)
 
     except calendarException as excpt:
         print(excpt)
