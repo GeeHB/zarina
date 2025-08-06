@@ -6,8 +6,6 @@
 #
 #   Auteur      :   Jérôme Heny-Barnaudière - DSI
 #
-#   Projet      :
-#
 #   Description :   Un évènement du calendrier : sortie, repos, ...
 #
 
@@ -41,11 +39,11 @@ class event(object):
     EVT_DURATION_MIN = 30      # Duréee min. d'un évènement
 
     # Construction
-    def __init__(self, title = None, type = EVENT_TYPE_NONE, startDate = None, duration = 0):
+    def __init__(self, title = None, type = EVENT_TYPE_NONE, startDate = None, duration = 0, userID = 0):
         self.idEvent_ = options.ID_NEW   # Nouvel évènement
         self.title_ = title if title is not None else DEF_EVENT_TITLE
-        self.idType = type
-        self.userID_ = 0
+        self.idType_ = type
+        self.userID_ = userID
         self.status_ = dbconsts.STATUS_OK
         self.startDate_ = startDate if startDate is not None else datetime.today()
         evtDuration = timedelta(minutes = duration if duration > self.EVT_DURATION_MIN else self.EVT_DURATION_MIN)
@@ -77,8 +75,8 @@ class event(object):
     @property
     def status(self):
         return self.status_
-    @type.setter
-    def type(self, newStatus):
+    @status.setter
+    def status(self, newStatus):
         if newStatus != self.status_:
             self.status_ = newStatus
 
@@ -114,6 +112,6 @@ class event(object):
     # Affichage de l'objet
     #
     def __repr__(self) -> str:
-        return f"Objet : {"vide" if self.title_ == "" else self.title_}\n Du : {self.startDate_}\n Au : {self.endDate_}\n Type : {self.idType_}"
+        return f"Evènement : {"vide" if self.title_ == "" else self.title_}\n\tPour : {self.userID_}\n\tDu : {self.startDate_}\n\tAu : {self.endDate_}\n\tType : {self.idType_}"
 
 # EOF

@@ -51,13 +51,15 @@ class calendar(object):
 
     # Destruction
     def __del__(self):
-        self._disconnect()
+        self.disconnect()
 
     # Ajout d'un évènement à une journée
     #
     #  Retourne {done ?, [evts]}
     def addEvent(self, evt : event.event):
         if evt.type != event.event.EVENT_TYPE_NONE :
+            evt.status = dbconsts.STATUS_JUST_ADDED
+            self.events_.append(evt)
             return True
         return False, None
 
@@ -70,7 +72,7 @@ class calendar(object):
     #
 
     # Connection à la base de données
-    def _connect(self) -> bool:
+    def connect(self) -> bool:
         if self.conn_ is None :
             try:
                 self.conn_ = mariadb.connect(
@@ -80,6 +82,8 @@ class calendar(object):
                         user=dbconsts.DB_USER,
                         password=dbconsts.DB_PWD,
                         connect_timeout = dbconsts.DB_CONNECT_TIMEOUT)
+
+                self.cursor_ = self.conn_.cursor()
             except mariadb.Error as e:
                 print(f"Erreur de connexion à la base de données : \"{e}\"")
                 self.conn_ = None
@@ -87,7 +91,7 @@ class calendar(object):
         return (self.conn_ is not None)
 
     # Deconnection
-    def _disconnect(self):
+    def disconnect(self) -> bool:
         if self.cursor_ is not None:
             self.cursor_.close()
             self.cursor_ = None
@@ -95,6 +99,9 @@ class calendar(object):
         if self.conn_ is not None:
             self.conn_.close()
             self.conn_ = None
+            return True
+
+        return False
 
     # Sauvegarde des évènements du calendrier en mémoire
     def save(self) -> int:
@@ -129,10 +136,11 @@ class calendar(object):
         assert self.conn_ is not None and self.cursor_ is not None
         insertQuery = f"INSERT INTO {dbconsts.DB_EVENTS_TABLE} ({dbconsts.DB_EVENTS_USERID}, {dbconsts.DB_EVENTS_TYPE}, {dbconsts.DB_EVENTS_TITLE}, {dbconsts.DB_EVENTS_START}, {dbconsts.DB_EVENTS_LAST}, {dbconsts.DB_EVENTS_STATUS}) VALUES (?,?,?,?,?,?)"
         try:
-            self.cursor_.execute(insertQuery, f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration}", f"{evt.status}")
+            self.cursor_.execute(insertQuery, (f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration()}", f"{evt.status}"))
             self.conn_.commit()
             return self.cursor_.lastrowid  # event ID is autoinc.
-        except mariadb.Error:
+        except mariadb.Error as e:
+            print(f"Erreur lors de l'insertion :\"{e}\"")
             self.conn_.rollback();
         return options.ID_NEW
 
@@ -141,7 +149,7 @@ class calendar(object):
         assert self.conn_ is not None and self.cursor_ is not None
         updateQuery = f"UPADTE {dbconsts.DB_EVENTS_TABLE} SET {dbconsts.DB_EVENTS_USERID} = ? , WHERE {dbconsts.DB_EVENTS_ID} = ?"
         try:
-            self.cursor_.execute(updateQuery, f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration}", f"{evt.status}", f"{evt.id}")
+            self.cursor_.execute(updateQuery, (f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration()}", f"{evt.status}", f"{evt.id}"))
             self.conn_.commit()
         except mariadb.Error:
             self.conn_.rollback()

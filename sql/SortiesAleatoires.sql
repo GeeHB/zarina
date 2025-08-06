@@ -34,7 +34,7 @@ CREATE TABLE `events` (
   `libelle` text DEFAULT NULL,
   `debut` date NOT NULL DEFAULT current_timestamp(),
   `duree` int(10) UNSIGNED NOT NULL DEFAULT 30,
-  `status` int(11) DEFAULT 0
+  `etat` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- --------------------------------------------------------
