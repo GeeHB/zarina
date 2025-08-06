@@ -22,26 +22,27 @@ DB_CONNECT_TIMEOUT = 10     # in sec.
 # Schéma
 #
 
-DB_USER_TABLE   = "user"
-DB_USER_ID      = "idUser"
-DB_USER_PROFIL  = "idProfil"
-DB_USER_FNAME   = "prenom"
-DB_USER_FNAME   = "name"
+DB_USERS_TABLE   = "users"
+DB_USERS_ID      = "idUser"
+DB_USERS_PROFIL  = "idProfil"
+DB_USERS_FNAME   = "prenom"
+DB_USERS_FNAME   = "name"
 
-DB_EVENT_TABLE  = "event"
-DB_EVENT_ID     = "idEvent"
-DB_EVENT_USER   = "idAgent"
-DB_EVENT_TYPE   = "idType"
-DB_EVENT_TITLE  = "libelle"
-DB_EVENT_START  = "debut"
-DB_EVENT_LAST   = "duree"
-DB_EVENT_STATUS = "etat"
+DB_EVENTS_TABLE  = "events"
+DB_EVENTS_ID     = "idEvent"
+DB_EVENTS_USERID = "idAgent"
+DB_EVENTS_TYPE   = "idType"
+DB_EVENTS_TITLE  = "libelle"
+DB_EVENTS_START  = "debut"
+DB_EVENTS_LAST   = "duree"
+DB_EVENTS_STATUS = "etat"
 
-STATUS_OK         = 0
-STATUS_JUST_ADDED = 1
-STATUS_TO_DELETE  = 2
+STATUS_OK           = 0
+STATUS_JUST_ADDED   = 1
+STATUS_TO_DELETE    = 2
+STATUS_MODIFIED     = 3
 
-DB_TYPE_TABLE   = "type"
+DB_TYPE_TABLE   = "types"
 DB_TYPE_ID      = "idType"
 DB_TYPE_TITLE   = "libelle"
 

@@ -12,7 +12,7 @@
 #
 
 import options
-from dbconsts import TYPE_REST, TYPE_WORK, TYPE_MEAL_TIME, TYPE_NIGHT_WORK, TYPE_RECOVERY, STATUS_OK, STATUS_JUST_ADDED, STATUS_TO_DELETE
+import dbconsts
 from datetime import datetime, timedelta
 
 DEF_EVENT_TITLE = "Nouvel évènement"
@@ -25,11 +25,11 @@ class event(object):
     # Types d'évènement
     #
     EVENT_TYPE_NONE = 0
-    EVENT_TYPE_REPOS = TYPE_REST
-    EVENT_TYPE_ACTIVITE = TYPE_WORK
-    EVENT_TYPE_PAUSE_MERIDIENNE = TYPE_MEAL_TIME
-    EVENT_TYPE_SORTIE = TYPE_NIGHT_WORK
-    EVENT_TYPE_RECUPERATION = TYPE_RECOVERY
+    EVENT_TYPE_REPOS = dbconsts.TYPE_REST
+    EVENT_TYPE_ACTIVITE = dbconsts.TYPE_WORK
+    EVENT_TYPE_PAUSE_MERIDIENNE = dbconsts.TYPE_MEAL_TIME
+    EVENT_TYPE_SORTIE = dbconsts.TYPE_NIGHT_WORK
+    EVENT_TYPE_RECUPERATION = dbconsts.TYPE_RECOVERY
 
     # Types de chevauchements
     #
@@ -45,7 +45,8 @@ class event(object):
         self.idEvent_ = options.ID_NEW   # Nouvel évènement
         self.title_ = title if title is not None else DEF_EVENT_TITLE
         self.idType = type
-        self.status_ = STATUS_OK
+        self.userID_ = 0
+        self.status_ = dbconsts.STATUS_OK
         self.startDate_ = startDate if startDate is not None else datetime.today()
         evtDuration = timedelta(minutes = duration if duration > self.EVT_DURATION_MIN else self.EVT_DURATION_MIN)
         self.endDate_ = self.startDate_ + evtDuration

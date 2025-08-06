@@ -8,7 +8,6 @@
 #
 #   Description :   "Calendrier" d'un agent"
 #
-
 import options
 import event
 
@@ -43,7 +42,7 @@ class calendar(object):
 
         # DB
         self.conn_ = None
-        self.cur_ = None
+        self.cursor_ = None
 
         if options.ID_NEW != agentID:
             self.load()
@@ -89,9 +88,9 @@ class calendar(object):
 
     # Deconnection
     def _disconnect(self):
-        if self.cur_ is not None:
-            self.cur_.close()
-            self.cur_ = None
+        if self.cursor_ is not None:
+            self.cursor_.close()
+            self.cursor_ = None
 
         if self.conn_ is not None:
             self.conn_.close()
@@ -99,13 +98,25 @@ class calendar(object):
 
     # Sauvegarde des évènements du calendrier en mémoire
     def save(self) -> int:
+        if self.conn_ is None or self.cursor_ is None:
+            return 0
+
         count = 0
         for evt in self.events_ :
-            if evt.isNew():
+            if evt.status == dbconsts.STATUS_JUST_ADDED:
                 newID = self.__saveSingleEvent(evt)
                 if newID != options.ID_NEW:
                     evt.id = newID
                     count+=1
+                    evt.status = dbconsts.STATUS_OK
+            else :
+                if evt.status == dbconsts.STATUS_MODIFIED:
+                    if self.__updateSingleEvent(evt):
+                        evt.status = dbconsts.STATUS_OK
+                else :
+                    if evt.status == dbconsts.STATUS_TO_DELETE:
+                        self.__deleteSingleEvent(evt)
+
         return count
 
     # Chargement de certains (ou de tous les) évènements du calendrier
@@ -115,11 +126,38 @@ class calendar(object):
 
     # Sauvegarde d'un seul élément
     def __saveSingleEvent(self, evt : event.event):
+        assert self.conn_ is not None and self.cursor_ is not None
+        insertQuery = f"INSERT INTO {dbconsts.DB_EVENTS_TABLE} ({dbconsts.DB_EVENTS_USERID}, {dbconsts.DB_EVENTS_TYPE}, {dbconsts.DB_EVENTS_TITLE}, {dbconsts.DB_EVENTS_START}, {dbconsts.DB_EVENTS_LAST}, {dbconsts.DB_EVENTS_STATUS}) VALUES (?,?,?,?,?,?)"
+        try:
+            self.cursor_.execute(insertQuery, f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration}", f"{evt.status}")
+            self.conn_.commit()
+            return self.cursor_.lastrowid  # event ID is autoinc.
+        except mariadb.Error:
+            self.conn_.rollback();
         return options.ID_NEW
 
     # Mise à jour d'un seul élément
-    def __updateSingleEvent(self, evt : event.event):
-        return options.ID_NEW
+    def __updateSingleEvent(self, evt : event.event) -> bool:
+        assert self.conn_ is not None and self.cursor_ is not None
+        updateQuery = f"UPADTE {dbconsts.DB_EVENTS_TABLE} SET {dbconsts.DB_EVENTS_USERID} = ? , WHERE {dbconsts.DB_EVENTS_ID} = ?"
+        try:
+            self.cursor_.execute(updateQuery, f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration}", f"{evt.status}", f"{evt.id}")
+            self.conn_.commit()
+        except mariadb.Error:
+            self.conn_.rollback()
+            return False
+        return True
+
+    # Suppression d'un seul élément
+    def __deleteSingleEvent(self, evt : event.event) -> bool:
+        assert self.conn_ is not None and self.cursor_ is not None
+        deleteQuery = f"DELETE FROM {dbconsts.DB_EVENTS_TABLE} WHERE {dbconsts.DB_EVENTS_ID} = ?"
+        try:
+            self.cursor_.execute(deleteQuery, (f"{evt.id}",))
+            self.conn_.commit()
+        except mariadb.Error:
+            return False
+        return True
 
 
 # EOF
