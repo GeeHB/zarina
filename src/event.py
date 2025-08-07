@@ -22,7 +22,7 @@ class event(object):
 
     # Types d'évènement
     #
-    EVENT_TYPE_NONE = 0
+    EVENT_TYPE_NONE = dbconsts.TYPE_UNKOWNN
     EVENT_TYPE_REPOS = dbconsts.TYPE_REST
     EVENT_TYPE_ACTIVITE = dbconsts.TYPE_WORK
     EVENT_TYPE_PAUSE_MERIDIENNE = dbconsts.TYPE_MEAL_TIME
@@ -36,8 +36,6 @@ class event(object):
     OVERLAP_END_IN = 2
     OVERLAP_FULL = (OVERLAP_START_IN or OVERLAP_END_IN) # Même temporalité
 
-    EVT_DURATION_MIN = 30      # Duréee min. d'un évènement
-
     # Construction
     def __init__(self, title = None, type = EVENT_TYPE_NONE, startDate = None, duration = 0, userID = 0):
         self.idEvent_ = options.ID_NEW   # Nouvel évènement
@@ -46,12 +44,12 @@ class event(object):
         self.userID_ = userID
         self.status_ = dbconsts.STATUS_OK
         self.startDate_ = startDate if startDate is not None else datetime.today()
-        evtDuration = timedelta(minutes = duration if duration > self.EVT_DURATION_MIN else self.EVT_DURATION_MIN)
+        evtDuration = timedelta(minutes = duration if duration > options.EVT_DURATION_MIN else options.EVT_DURATION_MIN)
         self.endDate_ = self.startDate_ + evtDuration
 
     # Un nouvel évènement ?
     def isNew(self) -> bool:
-        return True if self.id == options.ID_NEW else False
+        return True if self.id == options.ID_NEW or self.status_ == dbconsts.STATUS_JUST_ADDED else False
 
     # ID de l'évènement
     @property
@@ -61,6 +59,15 @@ class event(object):
     def id(self, newVal):
         if newVal != options.ID_NEW and newVal != self.idEvent_:
             self.idEvent_ = newVal
+
+    # Intitulé
+    @property
+    def title(self):
+        return self.title
+    @title.setter
+    def title(self, value):
+        if value is not None and len(value)>0 and self.title_ != value:
+            self.title_ = value
 
     # Type d'évènement
     @property
@@ -80,10 +87,24 @@ class event(object):
         if newStatus != self.status_:
             self.status_ = newStatus
 
+    # Début de l'évènement
+    @property
+    def start(self):
+        return self.startDate_
+    @start.setter
+    def start(self, newDate):
+        self.startDate_ = newDate
+        self.endDate_ = self.startDate_ + self.duration
+
     # Durée en min. d'un évènement
+    @property
     def duration(self) -> int:
         evtDuration = self.endDate_ - self.startDate_
         return int(evtDuration.total_seconds() / 60.0)
+    @duration.setter
+    def duration(self, newDuration):
+        if newDuration >= options.EVT_DURATION_MIN and newDuration <= options.EVT_DURATION_MAX:
+            self.endDate_ = self.startDate_ + newDuration
 
     # L'evt a t'il un chevauchement avec l'evt courant ?
     def overlap(self, other) :
@@ -104,13 +125,11 @@ class event(object):
     # Surcharges
     #
 
-    # "==" - Les éléments sont-ils égaux (du point de vue du calendrier ...) ?
+    # "==" - Les éléments sont-ils égaux (du point de vue du calendrier et du type ...) ?
     def __eq__(self, other) -> bool:
-        #return self.overlap(other) == self.OVERLAP_FULL and self.duration() == other.duration()
-        return self.startDate_ == other.startDate_ and self.endDate_ == other.endDate_
+        return self.startDate_.date() == other.startDate_.date() and self.duration == other.duration and self.idType_ == other.idType_
 
     # Affichage de l'objet
-    #
     def __repr__(self) -> str:
         return f"Evènement : {"vide" if self.title_ == "" else self.title_}\n\tPour : {self.userID_}\n\tDu : {self.startDate_}\n\tAu : {self.endDate_}\n\tType : {self.idType_}"
 

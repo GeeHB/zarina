@@ -46,11 +46,12 @@ DB_TYPE_TABLE   = "types"
 DB_TYPE_ID      = "idType"
 DB_TYPE_TITLE   = "libelle"
 
-TYPE_REST = 1
-TYPE_WORK = 2
-TYPE_MEAL_TIME = 3
+TYPE_UNKOWNN    = 0
+TYPE_REST       = 1
+TYPE_WORK       = 2
+TYPE_MEAL_TIME  = 3
 TYPE_NIGHT_WORK = 4
-TYPE_RECOVERY = 5
+TYPE_RECOVERY   = 5
 
 # Messages d'erreur
 #

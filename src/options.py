@@ -29,6 +29,10 @@ APP_AUTHOR = f"{APP_AUTHOR_SHORT} (henry-barnaudiere.j@allier.fr)"
 #
 ID_NEW = 0
 
+EVT_DURATION_MIN = 15      # Duréee min. d'un évènement
+EVT_DURATION_MAX = (8 * 60)
+
+
 # Base de données
 #
 

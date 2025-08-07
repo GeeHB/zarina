@@ -54,14 +54,13 @@ class calendar(object):
         self.disconnect()
 
     # Ajout d'un évènement à une journée
-    #
-    #  Retourne {done ?, [evts]}
     def addEvent(self, evt : event.event):
         if evt.type != event.event.EVENT_TYPE_NONE :
-            evt.status = dbconsts.STATUS_JUST_ADDED
-            self.events_.append(evt)
-            return True
-        return False, None
+            if self._findEvent(evt) == False :
+                evt.status = dbconsts.STATUS_JUST_ADDED
+                self.events_.append(evt)
+                return True
+        return False
 
     # Suppression de la liste des evènements
     def clear(self):
@@ -131,12 +130,23 @@ class calendar(object):
         if len(self.events_) > 0:
             self.clear()
 
+    # Suppression de tous les évènements d'un utilisateur donné
+    def clearUserEvents(self, uid) -> int :
+        assert self.conn_ is not None and self.cursor_ is not None
+        deleteQuery = f"DELETE FROM {dbconsts.DB_EVENTS_TABLE} WHERE {dbconsts.DB_EVENTS_USERID} = ?"
+        try:
+            self.cursor_.execute(deleteQuery, (f"{uid}",))
+            self.conn_.commit()
+        except mariadb.Error:
+            return -1
+        return self.cursor_.rowcount
+
     # Sauvegarde d'un seul élément
     def __saveSingleEvent(self, evt : event.event):
         assert self.conn_ is not None and self.cursor_ is not None
         insertQuery = f"INSERT INTO {dbconsts.DB_EVENTS_TABLE} ({dbconsts.DB_EVENTS_USERID}, {dbconsts.DB_EVENTS_TYPE}, {dbconsts.DB_EVENTS_TITLE}, {dbconsts.DB_EVENTS_START}, {dbconsts.DB_EVENTS_LAST}, {dbconsts.DB_EVENTS_STATUS}) VALUES (?,?,?,?,?,?)"
         try:
-            self.cursor_.execute(insertQuery, (f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration()}", f"{evt.status}"))
+            self.cursor_.execute(insertQuery, (f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration}", f"{evt.status}"))
             self.conn_.commit()
             return self.cursor_.lastrowid  # event ID is autoinc.
         except mariadb.Error as e:
@@ -149,7 +159,7 @@ class calendar(object):
         assert self.conn_ is not None and self.cursor_ is not None
         updateQuery = f"UPADTE {dbconsts.DB_EVENTS_TABLE} SET {dbconsts.DB_EVENTS_USERID} = ? , WHERE {dbconsts.DB_EVENTS_ID} = ?"
         try:
-            self.cursor_.execute(updateQuery, (f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration()}", f"{evt.status}", f"{evt.id}"))
+            self.cursor_.execute(updateQuery, (f"{evt.userID_}", f"{evt.type}", f"{evt.title_}", f"{evt.startDate_}", f"{evt.duration}", f"{evt.status}", f"{evt.id}"))
             self.conn_.commit()
         except mariadb.Error:
             self.conn_.rollback()
@@ -166,6 +176,13 @@ class calendar(object):
         except mariadb.Error:
             return False
         return True
+
+    # Recherche d'un élément dans la liste interne
+    def _findEvent(self, event : event.event) -> bool :
+        for evt in self.events_ :
+            if evt == event:
+                return True
+        return False
 
 
 # EOF
